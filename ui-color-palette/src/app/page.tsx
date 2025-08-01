@@ -342,20 +342,34 @@ export default function App() {
                   : colors.color.UICP['source'].value,
             }}
           >
-            You are authenticated on UI Color Palette!
+            You are authenticated on
+            <br />
+            UI Color Palette!
           </h1>
-          <h2
+        </div>
+        <h2
+          style={{
+            ...subtitleStyle,
+            color:
+              theme === 'default'
+                ? colors.color.UICP['6'].value
+                : colors.color.UICP['source'].value,
+          }}
+        >
+          You can close the tab or{' '}
+          <a
+            href="?action=sign_out"
             style={{
-              ...subtitleStyle,
+              ...linkStyle,
               color:
                 theme === 'default'
-                  ? colors.color.UICP['6'].value
-                  : colors.color.UICP['source'].value,
+                  ? colors.color.UICP['5'].value
+                  : colors.color.UICP['4'].value,
             }}
           >
-            You can close the tab
-          </h2>
-        </div>
+            sign out
+          </a>
+        </h2>
       </div>
     )
   }

@@ -355,20 +355,34 @@ export default function App() {
                   : colors.color.ISB['source'].value,
             }}
           >
-            You are authenticated on Ideas Spark Booth!
+            You are authenticated on
+            <br />
+            Ideas Spark Booth!
           </h1>
-          <h2
+        </div>
+        <h2
+          style={{
+            ...subtitleStyle,
+            color:
+              theme === 'default'
+                ? colors.color.ISB['6'].value
+                : colors.color.ISB['source'].value,
+          }}
+        >
+          You can close the tab or{' '}
+          <a
+            href="?action=sign_out"
             style={{
-              ...subtitleStyle,
+              ...linkStyle,
               color:
                 theme === 'default'
-                  ? colors.color.ISB['6'].value
-                  : colors.color.ISB['source'].value,
+                  ? colors.color.ISB['5'].value
+                  : colors.color.ISB['4'].value,
             }}
           >
-            You can close the tab
-          </h2>
-        </div>
+            sign out
+          </a>
+        </h2>
       </div>
     )
   }
