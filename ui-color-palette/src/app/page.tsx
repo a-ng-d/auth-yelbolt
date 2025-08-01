@@ -214,8 +214,9 @@ export default function App() {
               },
             }}
             theme={theme}
-            providers={['figma']}
-            onlyThirdPartyProviders
+            providers={['figma', 'google', 'github']}
+            magicLink={true}
+            view="magic_link"
           />
         </div>
         <p
