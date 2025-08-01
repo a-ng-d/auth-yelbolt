@@ -271,10 +271,10 @@ export const UicpTheme: Theme = {
       baseButtonSize: '16px',
     },
     fonts: {
-      bodyFontFamily: 'var(--font-lexend)',
-      buttonFontFamily: 'var(--font-lexend)',
-      inputFontFamily: 'var(--font-lexend)',
-      labelFontFamily: 'var(--font-lexend)',
+      bodyFontFamily: "'Lexend', sans-serif",
+      buttonFontFamily: "'Lexend', sans-serif",
+      inputFontFamily: "'Lexend', sans-serif",
+      labelFontFamily: "'Lexend', sans-serif",
     },
     borderWidths: {
       buttonBorderWidth: '2px',
@@ -323,10 +323,10 @@ export const UicpTheme: Theme = {
       baseButtonSize: '16px',
     },
     fonts: {
-      bodyFontFamily: 'var(--font-lexend)',
-      buttonFontFamily: 'var(--font-lexend)',
-      inputFontFamily: 'var(--font-lexend)',
-      labelFontFamily: 'var(--font-lexend)',
+      bodyFontFamily: "'Lexend', sans-serif",
+      buttonFontFamily: "'Lexend', sans-serif",
+      inputFontFamily: "'Lexend', sans-serif",
+      labelFontFamily: "'Lexend', sans-serif",
     },
     borderWidths: {
       buttonBorderWidth: '2px',
