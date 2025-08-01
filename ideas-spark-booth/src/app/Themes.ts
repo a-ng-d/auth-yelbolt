@@ -271,10 +271,10 @@ export const IsbTheme: Theme = {
       baseButtonSize: '16px',
     },
     fonts: {
-      bodyFontFamily: "'Lexend', sans-serif",
-      buttonFontFamily: "'Lexend', sans-serif",
-      inputFontFamily: "'Lexend', sans-serif",
-      labelFontFamily: "'Lexend', sans-serif",
+      bodyFontFamily: 'var(--font-lexend)',
+      buttonFontFamily: 'var(--font-lexend)',
+      inputFontFamily: 'var(--font-lexend)',
+      labelFontFamily: 'var(--font-lexend)',
     },
     borderWidths: {
       buttonBorderWidth: '2px',
