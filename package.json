@@ -32,7 +32,7 @@
     "format:isb": "npm run format -w auth-ideas-spark-booth",
     "install:isb": "npm install -w auth-ideas-spark-booth",
     "dev:wrk": "npm run start:8787 -w auth-yelbolt-worker",
-    "stop": "pkill -f 'node'"
+    "clean": "pkill -f 'next dev' && pkill -f 'esbuild' && pkill -f 'workerd'"
   },
   "browserslist": {
     "production": [
