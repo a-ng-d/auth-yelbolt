@@ -69,9 +69,11 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [passkey, setPasskey] = useState<string | null>(null)
   const [action, setAction] = useState<string | null>(null)
-  const [theme, setTheme] = useState<'default' | 'dark'>('dark')
+  const [theme, setTheme] = useState<'default' | 'dark'>('default')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const urlParams = new URLSearchParams(window.location.search)
     const passkey = urlParams.get('passkey') ?? null
     const action = urlParams.get('action') ?? null
@@ -127,6 +129,35 @@ export default function App() {
 
     return () => subscription.unsubscribe()
   }, [action, passkey])
+
+  if (!mounted) {
+    return (
+      <div
+        style={{
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.color.UICP['6'].value,
+          padding: '16px',
+          boxSizing: 'border-box',
+        }}
+      >
+        <p
+          style={{
+            ...paragraphStyle,
+            color:
+              theme === 'default'
+                ? colors.color.UICP['6'].value
+                : colors.color.UICP['source'].value,
+          }}
+        >
+          Loading...
+        </p>
+      </div>
+    )
+  }
 
   if (!session) {
     view = (
@@ -311,7 +342,7 @@ export default function App() {
                   : colors.color.UICP['source'].value,
             }}
           >
-            You are authenticated on UI Color Palette!
+            You are authenticated on UI Color Palette!
           </h1>
           <h2
             style={{

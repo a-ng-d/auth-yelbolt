@@ -69,9 +69,11 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [passkey, setPasskey] = useState<string | null>(null)
   const [action, setAction] = useState<string | null>(null)
-  const [theme, setTheme] = useState<'default' | 'dark'>('dark')
+  const [theme, setTheme] = useState<'default' | 'dark'>('default')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const urlParams = new URLSearchParams(window.location.search)
     const passkey = urlParams.get('passkey') ?? null
     const action = urlParams.get('action') ?? null
@@ -125,6 +127,35 @@ export default function App() {
 
     return () => subscription.unsubscribe()
   }, [action, passkey])
+
+  if (!mounted) {
+    return (
+      <div
+        style={{
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.color.ISB['6'].value,
+          padding: '16px',
+          boxSizing: 'border-box',
+        }}
+      >
+        <p
+          style={{
+            ...paragraphStyle,
+            color:
+              theme === 'default'
+                ? colors.color.ISB['6'].value
+                : colors.color.ISB['source'].value,
+          }}
+        >
+          Loading...
+        </p>
+      </div>
+    )
+  }
 
   if (!session) {
     view = (
@@ -324,7 +355,7 @@ export default function App() {
                   : colors.color.ISB['source'].value,
             }}
           >
-            You are authenticated on Ideas Spark Booth!
+            You are authenticated on Ideas Spark Booth!
           </h1>
           <h2
             style={{
