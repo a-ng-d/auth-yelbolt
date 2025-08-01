@@ -7,7 +7,8 @@
   "license": "MIT",
   "workspaces": [
     "ui-color-palette",
-    "ideas-spark-booth"
+    "ideas-spark-booth",
+    "packages/auth-yelbolt-worker"
   ],
   "scripts": {
     "ui-color-palette": "npm run dev:ui-color-palette & npm run dev:auth-yelbolt-worker",
@@ -30,7 +31,8 @@
     "major:ideas-spark-booth": "npm version major -w ideas-spark-booth",
     "format:ideas-spark-booth": "npm run format -w ideas-spark-booth",
     "install:ideas-spark-booth": "npm install -w ideas-spark-booth",
-    "dev:auth-yelbolt-worker": "cd ../auth-yelbolt-worker && npm run start:8787"
+    "dev:auth-yelbolt-worker": "npm run start:8787 -w auth-yelbolt-worker",
+    "stop": "pkill -f 'node'"
   },
   "browserslist": {
     "production": [
