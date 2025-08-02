@@ -12,6 +12,7 @@
   ],
   "scripts": {
     "uicp": "npm run dev:uicp & npm run dev:wrk",
+    "postuicp": "npm run clean:port:3000 && npm run clean:port:8787",
     "dev:uicp": "npm run dev -w auth-ui-color-palette",
     "build:uicp": "npm run build -w auth-ui-color-palette",
     "start:uicp": "npm run start -w auth-ui-color-palette",
@@ -22,6 +23,7 @@
     "format:uicp": "npm run format -w auth-ui-color-palette",
     "install:uicp": "npm install -w auth-ui-color-palette",
     "isb": "npm run dev:isb & npm run dev:wrk",
+    "postisb": "npm run clean:port:3000 && npm run clean:port:8787",
     "dev:isb": "npm run dev -w auth-ideas-spark-booth",
     "build:isb": "npm run build -w auth-ideas-spark-booth",
     "start:isb": "npm run start -w auth-ideas-spark-booth",
@@ -32,7 +34,9 @@
     "format:isb": "npm run format -w auth-ideas-spark-booth",
     "install:isb": "npm install -w auth-ideas-spark-booth",
     "dev:wrk": "npm run start:8787 -w auth-yelbolt-worker",
-    "clean": "pkill -f 'next dev' && pkill -f 'esbuild' && pkill -f 'workerd'"
+    "postdev:wrk": "npm run clean:port:8787",
+    "clean:port:8787": "lsof -ti:8787 | xargs kill -9 2>/dev/null || true",
+    "clean:port:3000": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true"
   },
   "browserslist": {
     "production": [
