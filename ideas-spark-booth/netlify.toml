@@ -15,7 +15,7 @@
   package = "@netlify/plugin-nextjs"
   
   [plugins.inputs]
-    includeFiles = ["node_modules/next"]
+    includeFiles = ["node_modules/next", "node_modules/styled-jsx"]
 
 [[redirects]]
   from = "/*"
