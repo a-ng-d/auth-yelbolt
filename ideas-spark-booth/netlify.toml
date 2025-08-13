@@ -5,6 +5,7 @@
 [build.environment]
   NODE_VERSION = "18"
   NETLIFY_NEXT_PLUGIN_SKIP = "false"
+  NEXT_RUNTIME_VERSION = "4.0.0"
 
 [dev]
   command = "npm run dev"
@@ -12,6 +13,9 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+  
+  [plugins.inputs]
+    includeFiles = ["node_modules/next"]
 
 [[redirects]]
   from = "/*"
