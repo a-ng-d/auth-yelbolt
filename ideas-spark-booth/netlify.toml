@@ -4,6 +4,14 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  NETLIFY_NEXT_PLUGIN_SKIP = "false"
+
+[dev]
+  command = "npm run dev"
+  port = 3000
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
 
 [[redirects]]
   from = "/*"
@@ -11,4 +19,4 @@
   status = 200
 
 [functions]
-  directory = ".netlify/functions" 
+  directory = ".netlify/functions"
