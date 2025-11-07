@@ -246,6 +246,12 @@ export default function App() {
             }}
             theme={theme}
             providers={['figma', 'google', 'github']}
+            providerScopes={{
+              figma: 'current_user:read',
+            }}
+            queryParams={{
+              scope: 'current_user:read',
+            }}
             magicLink={true}
             view="magic_link"
           />
