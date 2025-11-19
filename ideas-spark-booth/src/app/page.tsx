@@ -72,16 +72,61 @@ export default function App() {
   const [theme, setTheme] = useState<'default' | 'dark'>('default')
   const [mounted, setMounted] = useState(false)
 
+  const useFigmaOAuthInterceptor = () => {
+    useEffect(() => {
+      const originalSignInWithOAuth = supabase.auth.signInWithOAuth
+
+      supabase.auth.signInWithOAuth = async (credentials) => {
+        if (credentials.provider === 'figma') {
+          const enhancedCredentials = {
+            ...credentials,
+            options: {
+              ...credentials.options,
+              scopes: 'current_user:read',
+              queryParams: {
+                ...credentials.options?.queryParams,
+                scope: 'current_user:read',
+              },
+            },
+          }
+          return originalSignInWithOAuth.call(
+            supabase.auth,
+            enhancedCredentials
+          )
+        }
+        return originalSignInWithOAuth.call(supabase.auth, credentials)
+      }
+
+      return () => {
+        supabase.auth.signInWithOAuth = originalSignInWithOAuth
+      }
+    }, [])
+  }
+
+  useFigmaOAuthInterceptor()
+
   useEffect(() => {
     setMounted(true)
-    const urlParams = new URLSearchParams(window.location.search)
+
+    const getUrlParams = () => {
+      if (typeof window !== 'undefined') {
+        return new URLSearchParams(window.location.search)
+      }
+      return new URLSearchParams()
+    }
+
+    const urlParams = getUrlParams()
     const passkey = urlParams.get('passkey') ?? null
     const action = urlParams.get('action') ?? null
-    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'default'
+    const theme =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'default'
 
-    if (passkey !== null) localStorage.setItem('passkey', passkey)
+    if (passkey !== null && typeof window !== 'undefined') {
+      localStorage.setItem('passkey', passkey)
+    }
 
     setPasskey(passkey)
     setAction(action)
@@ -260,7 +305,7 @@ export default function App() {
             }}
             magicLink={true}
             view="magic_link"
-            onlyThirdPartyProviders
+            showLinks={false}
           />
         </div>
         <p

@@ -14,9 +14,9 @@
   "dependencies": {
     "@supabase/auth-ui-react": "^0.4.7",
     "@supabase/auth-ui-shared": "^0.1.8",
-    "@supabase/supabase-js": "^2.42.0",
+    "@supabase/supabase-js": "^2.83.0",
     "@swc/helpers": "^0.5.17",
-    "next": "14.2.5",
+    "next": "^16.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "styled-jsx": "^5.1.2"
@@ -26,8 +26,8 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "eslint": "^8.57.0",
-    "eslint-config-next": "14.2.5",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.0.3",
     "prettier": "^3.4.2",
     "prettier-plugin-css-order": "^2.1.2",
     "prettier-plugin-organize-imports": "^4.1.0",
