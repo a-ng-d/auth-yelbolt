@@ -171,12 +171,12 @@ export default function App() {
       if (session && passkey !== null) {
         fetch(
           process.env.NODE_ENV === 'development'
-            ? 'http://localhost:8787/tokens'
-            : `${process.env.NEXT_PUBLIC_WORKER_URL}/tokens` || '',
+            ? `http://localhost:8787/tokens?passkey=${passkey}`
+            : `${process.env.NEXT_PUBLIC_WORKER_URL}/tokens?passkey=${passkey}` ||
+                '',
           {
             method: 'POST',
             headers: {
-              passkey: passkey,
               tokens: JSON.stringify(session),
             },
           }
