@@ -140,9 +140,32 @@ export default function App() {
 
       if (session && action === 'sign_out') {
         const { error } = await supabase.auth.signOut({
-          scope: 'local',
+          scope: 'global',
         })
-        if (!error) return setSession(null)
+
+        if (!error) {
+          localStorage.clear()
+          sessionStorage.clear()
+
+          const cookies = document.cookie.split(';')
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i]
+            const eqPos = cookie.indexOf('=')
+            const name =
+              eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim()
+            document.cookie =
+              name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/'
+            document.cookie =
+              name +
+              '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=' +
+              window.location.hostname
+          }
+
+          setSession(null)
+
+          window.location.href = window.location.pathname
+          return
+        }
       }
 
       if (session && passkey !== null) {
