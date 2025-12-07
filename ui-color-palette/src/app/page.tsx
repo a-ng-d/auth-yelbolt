@@ -148,12 +148,11 @@ export default function App() {
       if (session && passkey !== null) {
         fetch(
           process.env.NODE_ENV === 'development'
-            ? 'http://localhost:8787'
-            : process.env.NEXT_PUBLIC_WORKER_URL || '',
+            ? 'http://localhost:8787/tokens'
+            : `${process.env.NEXT_PUBLIC_WORKER_URL}/tokens` || '',
           {
             method: 'POST',
             headers: {
-              type: 'SEND_TOKENS',
               passkey: passkey,
               tokens: JSON.stringify(session),
             },
@@ -296,7 +295,7 @@ export default function App() {
             }}
             magicLink={true}
             view="magic_link"
-            showLinks={false}
+            showLinks={true}
           />
         </div>
         <p
