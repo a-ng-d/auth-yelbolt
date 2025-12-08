@@ -1,6 +1,6 @@
 {
   "name": "auth-yelbolt",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "A monorepo for auth-yelbolt and its related projects.",
   "author": "Aurélien Grimaud",
