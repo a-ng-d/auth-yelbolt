@@ -162,13 +162,14 @@ export default function App() {
           }
 
           setSession(null)
+          setPasskey(null)
 
           window.location.href = window.location.pathname
           return
         }
       }
 
-      if (session && passkey !== null) {
+      if (session && passkey !== null && action !== 'sign_out') {
         fetch(
           process.env.NODE_ENV === 'development'
             ? `http://localhost:8787/tokens?passkey=${passkey}`
