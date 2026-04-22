@@ -87,14 +87,13 @@ function isSafeRedirectUri(uri: string): boolean {
 export default function OAuthConsent() {
   let view = null
   const [session, setSession] = useState<Session | null>(null)
-  const [passkey, setPasskey] = useState<string | null>(null)
+  const [authCode, setAuthCode] = useState<string | null>(null)
   const [clientId, setClientId] = useState<string | null>(null)
   const [redirectUri, setRedirectUri] = useState<string | null>(null)
   const [oauthState, setOauthState] = useState<string | null>(null)
   const [scope, setScope] = useState<string | null>(null)
   const [theme, setTheme] = useState<'default' | 'dark'>('default')
   const [mounted, setMounted] = useState(false)
-  const [tokensSent, setTokensSent] = useState(false)
 
   const useFigmaOAuthInterceptor = () => {
     useEffect(() => {
@@ -136,20 +135,20 @@ export default function OAuthConsent() {
     const urlParams = new URLSearchParams(window.location.search)
     const themeVal = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default'
 
-    // Persist OAuth params across the Supabase OAuth redirect
-    const passkeyVal = urlParams.get('passkey') ?? localStorage.getItem('oauth_passkey')
+    // Persist OAuth params across the Supabase social-provider redirect
+    const authCodeVal = urlParams.get('auth_code') ?? localStorage.getItem('oauth_auth_code')
     const clientIdVal = urlParams.get('client_id') ?? localStorage.getItem('oauth_client_id')
     const redirectUriVal = urlParams.get('redirect_uri') ?? localStorage.getItem('oauth_redirect_uri')
     const stateVal = urlParams.get('state') ?? localStorage.getItem('oauth_state')
     const scopeVal = urlParams.get('scope') ?? localStorage.getItem('oauth_scope')
 
-    if (passkeyVal) localStorage.setItem('oauth_passkey', passkeyVal)
+    if (authCodeVal) localStorage.setItem('oauth_auth_code', authCodeVal)
     if (clientIdVal) localStorage.setItem('oauth_client_id', clientIdVal)
     if (redirectUriVal) localStorage.setItem('oauth_redirect_uri', redirectUriVal)
     if (stateVal) localStorage.setItem('oauth_state', stateVal)
     if (scopeVal) localStorage.setItem('oauth_scope', scopeVal)
 
-    setPasskey(passkeyVal)
+    setAuthCode(authCodeVal)
     setClientId(clientIdVal)
     setRedirectUri(redirectUriVal)
     setOauthState(stateVal)
@@ -158,56 +157,30 @@ export default function OAuthConsent() {
   }, [])
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-
-      if (session && passkey && !tokensSent) {
-        await fetch(
-          process.env.NODE_ENV === 'development'
-            ? `http://localhost:8787/tokens?passkey=${passkey}`
-            : `${process.env.NEXT_PUBLIC_WORKER_URL}/tokens?passkey=${passkey}`,
-          {
-            method: 'POST',
-            headers: { tokens: JSON.stringify(session) },
-          }
-        ).catch((err) => console.error('Failed to store tokens:', err))
-        setTokensSent(true)
-      }
     })
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
-
-      if (session && passkey && !tokensSent) {
-        await fetch(
-          process.env.NODE_ENV === 'development'
-            ? `http://localhost:8787/tokens?passkey=${passkey}`
-            : `${process.env.NEXT_PUBLIC_WORKER_URL}/tokens?passkey=${passkey}`,
-          {
-            method: 'POST',
-            headers: { tokens: JSON.stringify(session) },
-          }
-        ).catch((err) => console.error('Failed to store tokens:', err))
-        setTokensSent(true)
-      }
     })
 
     return () => subscription.unsubscribe()
-  }, [passkey, tokensSent])
+  }, [])
 
   const handleApprove = () => {
-    if (!redirectUri || !passkey || !isSafeRedirectUri(redirectUri)) return
+    if (!redirectUri || !authCode || !isSafeRedirectUri(redirectUri)) return
 
-    localStorage.removeItem('oauth_passkey')
+    localStorage.removeItem('oauth_auth_code')
     localStorage.removeItem('oauth_client_id')
     localStorage.removeItem('oauth_redirect_uri')
     localStorage.removeItem('oauth_state')
     localStorage.removeItem('oauth_scope')
 
     const target = new URL(redirectUri)
-    target.searchParams.set('code', passkey)
+    target.searchParams.set('code', authCode)
     if (oauthState) target.searchParams.set('state', oauthState)
 
     window.location.href = target.toString()
@@ -216,7 +189,7 @@ export default function OAuthConsent() {
   const handleDeny = () => {
     if (!redirectUri || !isSafeRedirectUri(redirectUri)) return
 
-    localStorage.removeItem('oauth_passkey')
+    localStorage.removeItem('oauth_auth_code')
     localStorage.removeItem('oauth_client_id')
     localStorage.removeItem('oauth_redirect_uri')
     localStorage.removeItem('oauth_state')
