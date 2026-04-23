@@ -75,26 +75,18 @@ const buttonStyle = {
   width: '100%',
 } as React.CSSProperties
 
-function isSafeRedirectUri(uri: string): boolean {
-  try {
-    const parsed = new URL(uri)
-    return parsed.protocol === 'https:' || parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1'
-  } catch {
-    return false
-  }
-}
-
 export default function OAuthConsent() {
   let view = null
   const [session, setSession] = useState<Session | null>(null)
-  const [authCode, setAuthCode] = useState<string | null>(null)
-  const [clientId, setClientId] = useState<string | null>(null)
-  const [redirectUri, setRedirectUri] = useState<string | null>(null)
-  const [oauthState, setOauthState] = useState<string | null>(null)
-  const [scope, setScope] = useState<string | null>(null)
+  const [authorizationId, setAuthorizationId] = useState<string | null>(null)
+  const [authDetails, setAuthDetails] = useState<{
+    client: { name: string }
+    scope: string
+  } | null>(null)
   const [theme, setTheme] = useState<'default' | 'dark'>('default')
   const [mounted, setMounted] = useState(false)
 
+  // Ensure social-provider redirects land back on /oauth/consent
   const useFigmaOAuthInterceptor = () => {
     useEffect(() => {
       const originalSignInWithOAuth = supabase.auth.signInWithOAuth
@@ -129,33 +121,24 @@ export default function OAuthConsent() {
 
   useFigmaOAuthInterceptor()
 
+  // Persist authorization_id across the social-provider redirect
   useEffect(() => {
     setMounted(true)
-
     const urlParams = new URLSearchParams(window.location.search)
-    const themeVal = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default'
+    const themeVal = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'default'
+    const authIdVal =
+      urlParams.get('authorization_id') ??
+      localStorage.getItem('oauth_authorization_id')
 
-    // Persist OAuth params across the Supabase social-provider redirect
-    const authCodeVal = urlParams.get('auth_code') ?? localStorage.getItem('oauth_auth_code')
-    const clientIdVal = urlParams.get('client_id') ?? localStorage.getItem('oauth_client_id')
-    const redirectUriVal = urlParams.get('redirect_uri') ?? localStorage.getItem('oauth_redirect_uri')
-    const stateVal = urlParams.get('state') ?? localStorage.getItem('oauth_state')
-    const scopeVal = urlParams.get('scope') ?? localStorage.getItem('oauth_scope')
+    if (authIdVal) localStorage.setItem('oauth_authorization_id', authIdVal)
 
-    if (authCodeVal) localStorage.setItem('oauth_auth_code', authCodeVal)
-    if (clientIdVal) localStorage.setItem('oauth_client_id', clientIdVal)
-    if (redirectUriVal) localStorage.setItem('oauth_redirect_uri', redirectUriVal)
-    if (stateVal) localStorage.setItem('oauth_state', stateVal)
-    if (scopeVal) localStorage.setItem('oauth_scope', scopeVal)
-
-    setAuthCode(authCodeVal)
-    setClientId(clientIdVal)
-    setRedirectUri(redirectUriVal)
-    setOauthState(stateVal)
-    setScope(scopeVal)
+    setAuthorizationId(authIdVal)
     setTheme(themeVal)
   }, [])
 
+  // Track Supabase session
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
@@ -170,37 +153,49 @@ export default function OAuthConsent() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const handleApprove = () => {
-    if (!redirectUri || !authCode || !isSafeRedirectUri(redirectUri)) return
+  // Fetch authorization details once we have both session and authorizationId
+  useEffect(() => {
+    if (!session || !authorizationId) return
 
-    localStorage.removeItem('oauth_auth_code')
-    localStorage.removeItem('oauth_client_id')
-    localStorage.removeItem('oauth_redirect_uri')
-    localStorage.removeItem('oauth_state')
-    localStorage.removeItem('oauth_scope')
+    supabase.auth.oauth
+      .getAuthorizationDetails(authorizationId)
+      .then(({ data, error }) => {
+        if (!error && data)
+          setAuthDetails(data as { client: { name: string }; scope: string })
+      })
+      .catch(() => undefined)
+  }, [session, authorizationId])
 
-    const target = new URL(redirectUri)
-    target.searchParams.set('code', authCode)
-    if (oauthState) target.searchParams.set('state', oauthState)
+  const handleApprove = async () => {
+    if (!authorizationId) return
 
-    window.location.href = target.toString()
+    const { data, error } = await supabase.auth.oauth.approveAuthorization(
+      authorizationId,
+      { skipBrowserRedirect: true }
+    )
+    if (error || !data?.redirect_url) return
+
+    localStorage.removeItem('oauth_authorization_id')
+    window.location.href = data.redirect_url
   }
 
-  const handleDeny = () => {
-    if (!redirectUri || !isSafeRedirectUri(redirectUri)) return
+  const handleDeny = async () => {
+    if (!authorizationId) return
 
-    localStorage.removeItem('oauth_auth_code')
-    localStorage.removeItem('oauth_client_id')
-    localStorage.removeItem('oauth_redirect_uri')
-    localStorage.removeItem('oauth_state')
-    localStorage.removeItem('oauth_scope')
+    const { data, error } = await supabase.auth.oauth.denyAuthorization(
+      authorizationId,
+      { skipBrowserRedirect: true }
+    )
+    if (error || !data?.redirect_url) return
 
-    const target = new URL(redirectUri)
-    target.searchParams.set('error', 'access_denied')
-    target.searchParams.set('error_description', 'The user denied access')
-    if (oauthState) target.searchParams.set('state', oauthState)
+    localStorage.removeItem('oauth_authorization_id')
+    window.location.href = data.redirect_url
+  }
 
-    window.location.href = target.toString()
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    setSession(null)
+    setAuthDetails(null)
   }
 
   if (!mounted) {
@@ -245,9 +240,7 @@ export default function OAuthConsent() {
                     : colors.color.UICP['source'].value,
               }}
             >
-              {clientId
-                ? `${clientId} is requesting access to UI Color Palette`
-                : 'An application is requesting access to UI Color Palette'}
+              An application is requesting access to UI Color Palette
             </h2>
           </div>
         </div>
@@ -351,13 +344,13 @@ export default function OAuthConsent() {
                   : colors.color.UICP['source'].value,
             }}
           >
-            {clientId
-              ? `${clientId} is requesting access to your UI Color Palette account`
+            {authDetails?.client?.name
+              ? `${authDetails.client.name} is requesting access to your UI Color Palette account`
               : 'An application is requesting access to your UI Color Palette account'}
           </h2>
         </div>
 
-        {scope && (
+        {authDetails?.scope && authDetails.scope.trim() && (
           <div
             style={{
               ...cardStyle,
@@ -383,7 +376,7 @@ export default function OAuthConsent() {
             >
               Requested permissions
             </p>
-            {scope.split(' ').map((s) => (
+            {authDetails.scope.split(' ').map((s) => (
               <p
                 key={s}
                 style={{
@@ -410,16 +403,20 @@ export default function OAuthConsent() {
         >
           <button
             onClick={handleApprove}
+            disabled={!authorizationId}
             style={{
               ...buttonStyle,
               backgroundColor: colors.color.UICP['6'].value,
               color: colors.color.UICP['1'].value,
+              opacity: authorizationId ? 1 : 0.5,
+              cursor: authorizationId ? 'pointer' : 'not-allowed',
             }}
           >
             Authorize
           </button>
           <button
             onClick={handleDeny}
+            disabled={!authorizationId}
             style={{
               ...buttonStyle,
               backgroundColor: 'transparent',
@@ -432,6 +429,8 @@ export default function OAuthConsent() {
                   ? colors.color.UICP['3'].value
                   : colors.color.UICP['4'].value
               }`,
+              opacity: authorizationId ? 1 : 0.5,
+              cursor: authorizationId ? 'pointer' : 'not-allowed',
             }}
           >
             Deny
@@ -449,7 +448,11 @@ export default function OAuthConsent() {
         >
           Signed in as {session.user.email ?? session.user.id}.{' '}
           <a
-            href="?action=sign_out"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault()
+              handleSignOut()
+            }}
             style={{
               ...linkStyle,
               color:
